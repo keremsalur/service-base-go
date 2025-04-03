@@ -5,6 +5,9 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"service-base-go/domain/model"
+	"service-base-go/infra/db/sqlite"
+	"service-base-go/infra/service"
 	"service-base-go/pkg/config"
 	"service-base-go/pkg/logger"
 	"service-base-go/pkg/otel"
@@ -15,6 +18,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/rs/zerolog"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
 func main() {
@@ -26,11 +30,11 @@ func main() {
 	logger.InitLogger(cfg.AppName)
 
 	// db (sqlite)
-	/*
-		db := sqlite.NewSqliteDatabase().Connect(cfg.DatabaseUrl)
-		db.Migrate() // models interface{}
-		db.GetDB().Use(tracing.NewPlugin(tracing.WithoutMetrics()))
-	*/
+
+	db := sqlite.NewSqliteDatabase().Connect(cfg.DatabaseUrl)
+	// Model interface
+	db.Migrate(&model.Project{})
+	db.GetDB().Use(tracing.NewPlugin(tracing.WithoutMetrics()))
 
 	// Zipkin OpenTelemetry
 	// OpenTelemetry provider'ı başlat
@@ -63,6 +67,8 @@ func main() {
 	// Prometheus, Grafana
 	//app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 	app.Get("/metrics", monitor.New())
+
+	service.SetupServices(app, db)
 
 	go func() {
 		if err := app.Listen(":" + cfg.Port); err != nil {

@@ -31,7 +31,7 @@ func getEnvAsInt(name string, defaultValue int) int {
 }
 
 func LoadConfig() Config {
-	if err := godotenv.Load("..//.env"); err != nil {
+	if err := godotenv.Load(".env"); err != nil {
 		panic(".env dosyası okunamadı")
 	}
 	return Config{

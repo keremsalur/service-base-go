@@ -3,6 +3,8 @@ package middleware
 import (
 	"fmt"
 	"reflect"
+	"service-base-go/app/healthcheck"
+	"service-base-go/app/project"
 	"strconv"
 
 	"github.com/go-playground/validator"
@@ -13,6 +15,11 @@ var validate = validator.New()
 
 var requestMap = map[string]interface{}{
 	// request structs
+	// Healthcheck
+	"GET /healthcheck": healthcheck.HealthCheckRequest{},
+
+	// Project
+	"POST /api/v1/project/": project.CreateProjectRequest{},
 }
 
 func DynamicDTOValidationMiddleware(c *fiber.Ctx) error {
